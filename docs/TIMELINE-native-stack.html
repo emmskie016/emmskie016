@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GEO Monitor · Build Timeline (Native Stack)</title>
+<style>
+  :root{
+    --bg:#15110f; --panel:#1e1916; --panel2:#241d19; --border:#3a302a;
+    --ink:#f7f6f5; --ink2:#cbc6c2; --ink3:#928a83;
+    --slate:#5b6b8c; --amber:#c46a06; --indigo:#6366f1; --green:#1f8a5b;
+    --violet:#7c4dbf; --teal:#0d9488; --risk:#e0564f;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5;padding:40px 28px 80px}
+  .sheet{max-width:1080px;margin:0 auto}
+
+  /* header */
+  .head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;border-bottom:1px solid var(--border);padding-bottom:20px}
+  h1{font-size:30px;font-weight:700;letter-spacing:-.5px}
+  h1 .accent{color:var(--teal)}
+  .sub{color:var(--ink2);font-size:13.5px;margin-top:8px;max-width:680px}
+  .meta{text-align:right;font-size:11.5px;color:var(--ink3);white-space:nowrap;font-family:var(--mono)}
+  .meta b{color:var(--ink2);font-weight:600}
+  .printbtn{display:inline-block;margin-top:10px;padding:7px 13px;background:var(--teal);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer}
+
+  /* stack ribbon */
+  .stack{display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 4px}
+  .chip{font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:7px;background:var(--panel);border:1px solid var(--border);color:var(--ink2)}
+  .chip b{color:var(--ink);font-weight:600}
+
+  /* assumptions */
+  .assume{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+  .ac{background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:13px 15px}
+  .ac .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3)}
+  .ac .v{font-size:17px;font-weight:700;margin-top:3px}
+  .ac .v small{font-size:12px;font-weight:500;color:var(--ink2)}
+
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink3);margin:34px 0 14px;font-weight:700;display:flex;align-items:center;gap:9px}
+  h2::before{content:"";width:6px;height:18px;border-radius:3px;background:var(--teal)}
+
+  /* gantt */
+  .gantt{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:18px 18px 8px;overflow-x:auto}
+  .grow{display:grid;grid-template-columns:188px repeat(7,1fr);align-items:center;gap:0;min-width:760px}
+  .ghead .cell{font-family:var(--mono);font-size:10.5px;color:var(--ink3);text-align:center;padding:0 0 10px;border-bottom:1px solid var(--border)}
+  .ghead .cell.lbl{text-align:left}
+  .ghead .cell small{display:block;color:var(--ink3);font-size:9px;font-weight:400}
+  .grow .name{font-size:12.5px;font-weight:600;padding:9px 12px 9px 0;display:flex;align-items:center;gap:7px}
+  .grow .name .pid{font-family:var(--mono);font-size:10px;color:var(--ink3)}
+  .track{position:relative;height:34px;grid-column:2 / span 7;display:grid;grid-template-columns:repeat(7,1fr)}
+  .track .gl{border-left:1px dashed #2b231e;height:100%}
+  .bar{position:absolute;top:7px;height:20px;border-radius:6px;display:flex;align-items:center;padding:0 9px;font-size:10.5px;font-weight:600;color:#fff;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+  .bar.risk{outline:2px solid var(--risk);outline-offset:1px}
+  .b-slate{background:var(--slate)} .b-amber{background:var(--amber)} .b-indigo{background:var(--indigo)}
+  .b-green{background:var(--green)} .b-violet{background:var(--violet)} .b-teal{background:var(--teal)}
+  .rowline{grid-column:1 / -1;height:1px;background:var(--border);opacity:.5}
+
+  /* phase table */
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--border);border-radius:13px;overflow:hidden}
+  th,td{text-align:left;padding:11px 15px;font-size:12.5px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{font-size:10.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3);background:var(--panel2)}
+  tr:last-child td{border-bottom:none}
+  td.d{font-family:var(--mono);color:var(--teal);font-weight:600;text-align:center;white-space:nowrap}
+  .tag{display:inline-block;font-family:var(--mono);font-size:9.5px;padding:1px 6px;border-radius:5px;background:var(--panel2);border:1px solid var(--border);color:var(--ink2)}
+  .totalrow td{background:var(--panel2);font-weight:700}
+  .pdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle}
+
+  /* milestones */
+  .mile{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .mc{background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:13px 15px;display:flex;gap:12px}
+  .mc .wk{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--teal);min-width:78px;padding-top:1px}
+  .mc .mt{font-size:12.5px}
+  .mc .mt b{color:var(--ink)}
+  .mc.crit{border-color:var(--risk)}
+  .mc.crit .wk{color:var(--risk)}
+
+  /* callouts */
+  .call{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--teal);border-radius:9px;padding:13px 16px;margin-top:14px;font-size:12.5px;color:var(--ink2)}
+  .call.risk{border-left-color:var(--risk)}
+  .call b{color:var(--ink)}
+  .call .h{font-weight:700;color:var(--ink);margin-bottom:4px;display:block}
+
+  /* legend / footer */
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:11px;color:var(--ink2)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .sw{width:13px;height:13px;border-radius:4px;display:inline-block}
+  footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--border);font-size:11px;color:var(--ink3);line-height:1.7}
+  footer a{color:var(--teal);text-decoration:none}
+  .mono{font-family:var(--mono)}
+
+  @media print{
+    body{background:#fff;color:#1a1714;padding:0}
+    .printbtn{display:none}
+    .ac,.gantt,table,.mc,.call,.head{break-inside:avoid}
+    .assume,.mile{break-inside:avoid}
+    :root{--panel:#fafafa;--panel2:#f0f0f0;--border:#d8d2cc;--ink:#1a1714;--ink2:#3f3a35;--ink3:#7a726b;--bg:#fff}
+    h2::before{background:#0d9488}
+    .sub,.meta{color:#555}
+  }
+  @page{margin:14mm}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="head">
+    <div>
+      <h1>GEO Monitor — <span class="accent">Build Timeline</span></h1>
+      <p class="sub">Architecture-first, AI-assisted solo build on GEO Monitor’s native stack — exactly as drawn in the source-of-truth architecture. Sequenced so the two highest-risk subsystems — tenant isolation and citation parsing — are proven first.</p>
+    </div>
+    <div class="meta">
+      <div><b>Cadence</b> · 4 hrs/day · 5 days/wk</div>
+      <div><b>Effort</b> · 33 days (132 hrs)</div>
+      <div><b>Window</b> · Jun 22 – Aug 7, 2026</div>
+      <button class="printbtn" onclick="window.print()">⤓ Save as PDF</button>
+    </div>
+  </div>
+
+  <!-- NATIVE STACK -->
+  <div class="stack">
+    <span class="chip"><b>Next.js 15</b> · App Router</span>
+    <span class="chip"><b>TypeScript</b></span>
+    <span class="chip"><b>Supabase</b> · Postgres + Auth + RLS</span>
+    <span class="chip"><b>Drizzle</b> ORM</span>
+    <span class="chip"><b>Inngest</b> · background jobs</span>
+    <span class="chip"><b>Stripe</b> · billing</span>
+    <span class="chip"><b>Resend / Postmark</b> · email</span>
+    <span class="chip"><b>Vercel</b> · runtime</span>
+  </div>
+
+  <!-- ASSUMPTIONS -->
+  <div class="assume">
+    <div class="ac"><div class="k">Daily cadence</div><div class="v">4 hrs <small>/ day</small></div></div>
+    <div class="ac"><div class="k">Week length</div><div class="v">20 hrs <small>5 days</small></div></div>
+    <div class="ac"><div class="k">Total effort</div><div class="v">33 <small>4-hr days</small></div></div>
+    <div class="ac"><div class="k">Calendar</div><div class="v">7 <small>weeks</small></div></div>
+  </div>
+
+  <!-- GANTT -->
+  <h2>Phase schedule</h2>
+  <div class="gantt">
+    <div class="grow ghead">
+      <div class="cell lbl">Phase</div>
+      <div class="cell">W1<small>Jun 22</small></div>
+      <div class="cell">W2<small>Jun 29</small></div>
+      <div class="cell">W3<small>Jul 6</small></div>
+      <div class="cell">W4<small>Jul 13</small></div>
+      <div class="cell">W5<small>Jul 20</small></div>
+      <div class="cell">W6<small>Jul 27</small></div>
+      <div class="cell">W7<small>Aug 3</small></div>
+    </div>
+
+    <div class="grow">
+      <div class="name"><span class="pid">P0</span> Context &amp; gates</div>
+      <div class="track">
+        <div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div>
+        <div class="bar b-teal" style="left:0%;width:5.7%">2d</div>
+      </div>
+    </div>
+    <div class="grow">
+      <div class="name"><span class="pid">P1</span> Foundation + tenancy</div>
+      <div class="track">
+        <div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div>
+        <div class="bar b-green risk" style="left:5.7%;width:11.4%">RLS · 4d</div>
+      </div>
+    </div>
+    <div class="grow">
+      <div class="name"><span class="pid">P2</span> Adapters + citations</div>
+      <div class="track">
+        <div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div>
+        <div class="bar b-amber risk" style="left:17.1%;width:14.3%">parse harness · 5d</div>
+      </div>
+    </div>
+    <div class="grow">
+      <div class="name"><span class="pid">P3</span> Inngest pipeline</div>
+      <div class="track">
+        <div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div>
+        <div class="bar b-amber" style="left:31.4%;width:14.3%">7 fns · 5d</div>
+      </div>
+    </div>
+    <div class="grow">
+      <div class="name"><span class="pid">P4</span> API services</div>
+      <div class="track">
+        <div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div>
+        <div class="bar b-indigo" style="left:45.7%;width:11.4%">6 svc · 4d</div>
+      </div>
+    </div>
+    <div class="grow">
+      <div class="name"><span class="pid">P5</span> Dashboard</div>
+      <div class="track">
+        <div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div>
+        <div class="bar b-violet" style="left:57.1%;width:17.1%">7 screens · 6d</div>
+      </div>
+    </div>
+    <div class="grow">
+      <div class="name"><span class="pid">P6</span> Billing + metering</div>
+      <div class="track">
+        <div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div>
+        <div class="bar b-teal" style="left:74.3%;width:8.6%">Stripe · 3d</div>
+      </div>
+    </div>
+    <div class="grow">
+      <div class="name"><span class="pid">P7</span> Hardening + launch</div>
+      <div class="track">
+        <div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div>
+        <div class="bar b-slate" style="left:82.9%;width:11.4%">+buffer · 4d</div>
+      </div>
+    </div>
+  </div>
+  <div class="legend">
+    <span><span class="sw b-teal"></span>Context / billing / infra</span>
+    <span><span class="sw b-green"></span>Data &amp; tenancy</span>
+    <span><span class="sw b-amber"></span>Pipeline / adapters</span>
+    <span><span class="sw b-indigo"></span>API</span>
+    <span><span class="sw b-violet"></span>Dashboard</span>
+    <span><span class="sw b-slate"></span>Hardening</span>
+    <span><span class="sw" style="background:transparent;outline:2px solid var(--risk);outline-offset:-2px"></span>Highest-risk — proven first</span>
+  </div>
+
+  <!-- PHASE TABLE -->
+  <h2>Phase breakdown</h2>
+  <table>
+    <thead><tr><th style="width:42%">Phase &amp; work</th><th style="width:14%">Days</th><th>Definition of done</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pdot b-teal"></span><b>P0 · Context &amp; gates</b><br><span class="tag">SPEC.md</span> <span class="tag">ARCHITECTURE.md</span> <span class="tag">CLAUDE.md</span> <span class="tag">CI</span></td><td class="d">2</td><td>Agent-consumable docs written; typecheck + lint + test pipeline green on an empty repo.</td></tr>
+      <tr><td><span class="pdot b-green"></span><b>P1 · Foundation + tenancy</b><br><span class="tag">Next.js 15</span> <span class="tag">Supabase Auth</span> <span class="tag">Drizzle 12 tables</span> <span class="tag">RLS</span></td><td class="d">4</td><td>App boots, Supabase Auth login works, <b>cross-tenant RLS test goes failing→green</b> (isolation proven).</td></tr>
+      <tr><td><span class="pdot b-amber"></span><b>P2 · Adapters + citation parsing</b> ⚠<br><span class="tag">DataForSEO</span> <span class="tag">EngineResultAdapter</span> <span class="tag">RankAdapter</span> <span class="tag">regression harness</span></td><td class="d">5</td><td>Provider access resolved (API vs DataForSEO); one engine returns a <b>parsed, normalized citation</b>; parser regression suite passes.</td></tr>
+      <tr><td><span class="pdot b-amber"></span><b>P3 · Inngest pipeline</b><br><span class="tag">scheduler→runner→caller→extractor→scoring→alerts→geo-grid</span></td><td class="d">5</td><td>A prompt runs end-to-end on Inngest; idempotent re-run does not double-write; <b>scores land in Postgres</b>.</td></tr>
+      <tr><td><span class="pdot b-indigo"></span><b>P4 · API services</b><br><span class="tag">domains</span> <span class="tag">prompts</span> <span class="tag">reporting</span> <span class="tag">alerts</span> <span class="tag">billing</span> <span class="tag">admin</span></td><td class="d">4</td><td>Next.js route handlers behind Zod contracts; <b>run-now works</b> from an authed request.</td></tr>
+      <tr><td><span class="pdot b-violet"></span><b>P5 · Dashboard</b><br><span class="tag">overview</span> <span class="tag">tracked pages</span> <span class="tag">prompts</span> <span class="tag">geo-grid</span> <span class="tag">coverage</span> <span class="tag">alerts</span> <span class="tag">billing</span></td><td class="d">6</td><td>7 React screens render <b>real scores / SoV / trends</b> from precomputed reads.</td></tr>
+      <tr><td><span class="pdot b-teal"></span><b>P6 · Billing + metering</b><br><span class="tag">Stripe checkout</span> <span class="tag">webhooks</span> <span class="tag">usage metering</span> <span class="tag">spend breaker</span></td><td class="d">3</td><td>Stripe checkout + webhook reconcile plan state; <b>usage gating + spend cap enforced</b>.</td></tr>
+      <tr><td><span class="pdot b-slate"></span><b>P7 · Hardening + launch</b><br><span class="tag">observability</span> <span class="tag">retention/partition</span> <span class="tag">QA</span> <span class="tag">Vercel cutover</span></td><td class="d">4</td><td>Logs/alerts wired, <span class="mono">engine_results.raw</span> retention live, QA pass, <b>production cutover on Vercel</b>.</td></tr>
+      <tr class="totalrow"><td>Total</td><td class="d">33</td><td>≈ 132 hours · 7 calendar weeks</td></tr>
+    </tbody>
+  </table>
+
+  <!-- MILESTONES -->
+  <h2>Weekly milestones</h2>
+  <div class="mile">
+    <div class="mc"><div class="wk">W1 · Jun 26</div><div class="mt"><b>Isolation proven.</b> App boots, Supabase Auth login works, cross-tenant RLS test green.</div></div>
+    <div class="mc crit"><div class="wk">W2 · Jul 3</div><div class="mt"><b>Riskiest thing proven.</b> One engine returns a parsed, normalized citation through an adapter.</div></div>
+    <div class="mc"><div class="wk">W3 · Jul 10</div><div class="mt"><b>Pipeline closes.</b> A prompt runs end-to-end on Inngest → scores in Postgres.</div></div>
+    <div class="mc"><div class="wk">W4 · Jul 17</div><div class="mt"><b>API live.</b> Run-now works from an authed request.</div></div>
+    <div class="mc"><div class="wk">W5 · Jul 24</div><div class="mt"><b>It’s visible.</b> Dashboard renders real scores / share-of-voice.</div></div>
+    <div class="mc"><div class="wk">W6 · Jul 31</div><div class="mt"><b>It earns.</b> Stripe billing + plan gating live.</div></div>
+    <div class="mc"><div class="wk">W7 · Aug 7</div><div class="mt"><b>Launch.</b> Hardened, observable, Vercel production cutover.</div></div>
+    <div class="mc"><div class="wk">Variant</div><div class="mt"><b>7-day weeks</b> → same 33 days of effort compresses to <b>~5 calendar weeks</b> (launch ~Jul 25).</div></div>
+  </div>
+
+  <!-- PRINCIPLE + RISK -->
+  <h2>Why this order</h2>
+  <div class="call">
+    <span class="h">Prove the scary things first.</span>
+    The two places AI can’t be trusted on this product — <b>RLS tenant isolation</b> and <b>cross-engine citation parsing</b> — are front-loaded into W1 and W2. If either breaks, it surfaces in week 1–2 with five weeks of runway, not in week 6. Everything after is execution against proven primitives.
+  </div>
+  <div class="call risk">
+    <span class="h">Critical-path dependency (can move the date).</span>
+    The architecture’s own #1 risk — <b>engine access: official API vs. DataForSEO scraping</b> — gates P2. Resolve it during P0/W1; if it’s still open when W2 starts, P2 slips and everything downstream slides with it.
+  </div>
+
+  <footer>
+    Method: architecture-first → agent-consumable context → validation gates → judgment over execution. The agent writes; the human shapes architecture, names edge cases, and reviews every gate.
+    Stack = GEO Monitor native (Next.js 15 · Vercel · Supabase · Drizzle · Inngest · Stripe · Resend). &nbsp;·&nbsp; Generated for GEO Monitor, 2026-06-22.
+  </footer>
+
+</div>
+</body>
+</html>
