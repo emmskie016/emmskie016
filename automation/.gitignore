@@ -1,0 +1,4 @@
+node_modules/
+.notion-profile/
+*.png
+package-lock.json

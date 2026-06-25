@@ -1,0 +1,12 @@
+{
+  "name": "moon-media-automation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "login": "node build-notion.mjs --login",
+    "build": "node build-notion.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}
