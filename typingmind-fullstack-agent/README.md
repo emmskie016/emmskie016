@@ -45,6 +45,21 @@ architect → DB → backend → frontend → AI → QA → reviewer → devops.
 | `knowledge-base/06-context-engineering.md` | AGENTS.md, context stack, tool-constrained access. |
 | `skills/` | Reusable playbooks: scaffold feature, DB schema, REST API, frontend, AI feature, tests, debug, security, CI/CD, refactor. |
 | `agents/` | Engineering roles: architect, DB, backend, frontend, AI, QA, reviewer, devops. |
+| `typingmind-IMPORT.md` | **Everything in one file.** Fastest setup — paste the system-prompt block into Instructions, upload the file as the knowledge base. |
+
+## Fastest setup (2 steps)
+
+TypingMind has no public API, so the agent is created in your browser. To make it quick,
+`typingmind-IMPORT.md` bundles the whole pack into one file:
+
+1. **Agent → Create** `Full-Stack Dev`. Open `typingmind-IMPORT.md`, copy the
+   **SYSTEM PROMPT** block into the Instructions field.
+2. **Knowledge Base → Upload** `typingmind-IMPORT.md` (the rest of the file is the stack,
+   workflow, skills, and roles). Wait for "Ready".
+
+Then add your Anthropic + OpenAI keys in Settings and set the default model. Done.
+Use the separate files in `knowledge-base/`, `skills/`, `agents/` if you prefer to upload them
+individually (better RAG granularity) and edit them over time.
 
 ---
 
