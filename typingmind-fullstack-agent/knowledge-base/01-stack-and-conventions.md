@@ -1,50 +1,72 @@
-# Stack & Conventions
+# Stack & Conventions (2026 AI‑Native Full‑Stack)
 
-> **EDIT THIS FILE.** Replace the placeholders with your real stack and rules. This is the
-> single most important "training" document — the agent treats it as the source of truth and
-> follows it over generic best practices when they conflict.
+> Source of truth for the agent. Follows the **"How Senior Engineers Actually Build With AI in
+> 2026"** principle: architecture-first, spec-driven, context-engineered. Edit the `[...]`
+> placeholders to your reality — but this is a complete, opinionated default you can ship with.
 
-## Tech stack
-- **Language(s):** [e.g. TypeScript (strict), Python 3.12]
-- **Frontend:** [e.g. React 19 + Vite, Tailwind CSS, shadcn/ui]
-- **Backend:** [e.g. Node.js + Express / Fastify, or FastAPI]
-- **Database:** [e.g. PostgreSQL via Prisma / Drizzle]
-- **Auth:** [e.g. JWT access + refresh, or Supabase Auth, or Clerk]
-- **Infra / deploy:** [e.g. Docker, deployed to AWS ECS / Vercel]
-- **Package manager:** [e.g. pnpm — never npm/yarn]
-- **Testing:** [e.g. Vitest (unit), Playwright (e2e)]
+## Guiding principle
+> The skill in 2026 isn't typing code — it's the **system you build around the agent**.
+> AI drafts, the engineer decides. Architecture and code auditing are the high‑value work.
 
-## Repo structure
+## Recommended default stack (modern, AI‑native, TypeScript‑first)
+
+| Layer | Default choice | Why |
+|------|----------------|-----|
+| Language | **TypeScript** (strict) end‑to‑end | One language across the stack; shared types. |
+| Frontend | **React 19 + Vite**, **Tailwind CSS**, **shadcn/ui** | Fast, typed, component-driven, AI-friendly. |
+| Routing/data | **TanStack Router + TanStack Query** | Typed routing, clean server-state separation. |
+| Validation | **Zod** (shared client+server schemas) | One schema validates input and types it. |
+| Backend | **Hono** or **Fastify** (Node) — or **Next.js** for full-stack | Lightweight, typed, edge-capable. |
+| API style | **REST** (OpenAPI) or **tRPC** for TS-only apps | Predictable contracts; tRPC = end-to-end types. |
+| Database | **PostgreSQL** | Reliable, relational, JSON + `pgvector` for AI. |
+| ORM | **Drizzle** (or Prisma) | Typed queries, SQL-first migrations. |
+| Auth | **better-auth** / **Clerk** / **Supabase Auth** | Don't roll your own auth. |
+| AI layer | LLM via provider SDK + **RAG** (pgvector) + agents/tools | Embed AI alongside frontend/backend/DB. |
+| Background jobs | **BullMQ** / queue, or platform jobs | Offload slow + async work. |
+| Infra | **Docker**, deploy to **Vercel / Fly.io / AWS** | Reproducible builds; pick one target. |
+| CI/CD | **GitHub Actions** | Lint + typecheck + test + deploy on every PR. |
+| Testing | **Vitest** (unit/integration), **Playwright** (e2e) | Fast unit + real browser e2e. |
+| Observability | Structured logs + **OpenTelemetry** + error tracking (Sentry) | See what production does. |
+| Package manager | **pnpm** | Fast, strict, monorepo-friendly. |
+
+> Python variant: **FastAPI + Pydantic + SQLAlchemy/SQLModel + Alembic + PostgreSQL + pytest**.
+> Keep the *principles* identical; only swap the tools.
+
+## Repo structure (monorepo default)
 ```
-[ describe top-level folders, e.g. ]
-/apps/web        # frontend
-/apps/api        # backend
-/packages/shared # shared types & utils
-/infra           # IaC / docker
+/apps/web         # React frontend
+/apps/api         # backend service
+/packages/shared  # shared TS types, Zod schemas, utils
+/packages/db      # schema + migrations (Drizzle)
+/infra            # Docker, IaC, deploy config
+/docs/specs       # spec-driven dev: one folder per feature (see 05)
+AGENTS.md         # context file the agent reads first (see 06)
 ```
 
 ## Hard rules (do)
-- Use [pnpm] for all dependency operations.
-- All new code is fully typed. No `any` without an explicit `// reason:` comment.
-- Shared types live in `[packages/shared]` and are imported, never duplicated.
-- Every API endpoint validates its input with `[zod / pydantic]`.
-- Database access goes through `[the repository layer / Prisma]` — no raw SQL in handlers
-  except `[where allowed]`.
-- Environment config is read from `[env.ts / settings.py]`, never `process.env` scattered.
+- Use **pnpm** for all dependency operations.
+- Everything is **typed**. No `any` without an explicit `// reason:` comment.
+- Shared types and Zod schemas live in `packages/shared` and are imported, never duplicated.
+- Every endpoint validates input with a **Zod schema** at the boundary.
+- DB access goes through the **repository / Drizzle layer** — no raw SQL in route handlers.
+- Config is read from one typed module, **validated at startup** (fail fast on missing env).
+- Every feature starts from a **spec** in `/docs/specs` (see `05-spec-driven-workflow.md`).
 
 ## Hard rules (don't)
-- Don't introduce a new dependency without flagging it and the reason.
-- Don't change the public API shape without noting it's a breaking change.
-- Don't commit secrets, `.env` files, or generated artifacts.
-- Don't add a new abstraction layer unless it removes real, present duplication.
+- Don't add a dependency without flagging it + the reason.
+- Don't change a public API/contract without marking it breaking.
+- Don't commit secrets, `.env`, or generated artifacts.
+- Don't add an abstraction unless it removes real, present duplication.
+- Don't merge AI-written code without review against `04-review-checklist.md`.
 
 ## Naming
-- Files: [e.g. kebab-case for files, PascalCase for React components].
-- Variables/functions: [e.g. camelCase]. Constants: [UPPER_SNAKE_CASE].
-- Database: [e.g. snake_case tables/columns, plural table names].
+- Files: kebab-case; React components: PascalCase.
+- Variables/functions: camelCase. Constants: UPPER_SNAKE_CASE.
+- DB: snake_case, plural table names.
 
 ## Definition of done
-- Compiles / type-checks with no new errors.
-- Tests added or updated for the change and passing.
-- Lints clean (`[pnpm lint]`).
-- No secrets, no debug logging left in.
+- Spec exists and is satisfied.
+- Type-checks, lints, and tests pass (`pnpm check`).
+- Tests added/updated for the change.
+- Reviewed against the checklist; no secrets or debug code left in.
+- Breaking changes documented.

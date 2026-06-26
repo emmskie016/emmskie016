@@ -11,11 +11,17 @@
     "note": "Latest Claude models ignore temperature/top_p; steer via the system prompt instead."
   },
   "instructionsSource": "system-prompt.md",
+  "method": "Architecture-first, spec-driven (Specify->Plan->Tasks->Implement), context-engineered. Based on 'How Senior Engineers Actually Build With AI in 2026'.",
   "knowledgeBase": [
+    "AGENTS.md",
     "knowledge-base/01-stack-and-conventions.md",
     "knowledge-base/02-code-style.md",
     "knowledge-base/03-architecture-patterns.md",
-    "knowledge-base/04-review-checklist.md"
+    "knowledge-base/04-review-checklist.md",
+    "knowledge-base/05-spec-driven-workflow.md",
+    "knowledge-base/06-context-engineering.md",
+    "skills/ (all playbooks)",
+    "agents/ (all engineering roles)"
   ],
   "suggestedPlugins": [
     "Web Search / Browsing",

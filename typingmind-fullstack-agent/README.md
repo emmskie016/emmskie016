@@ -9,19 +9,42 @@ full‑stack engineer.
 > "Training" an agent there means: a strong **system prompt** + a **knowledge base** (RAG)
 > + the right **plugins/tools**. This pack gives you all three.
 
+## Methodology
+
+The stack and workflow follow the principles in
+[**"How Senior Engineers Actually Build With AI in 2026"**](https://www.youtube.com/watch?v=14RP8liACqo):
+
+- **Architecture-first** — design the system before writing code; the real skill is the system
+  you build *around* the agent.
+- **Spec-driven development** — `Specify → Plan → Tasks → Implement`; Markdown specs as
+  executable blueprints, implemented one small task at a time.
+- **Context engineering** — `AGENTS.md`, structured knowledge files, reusable **skills**, and
+  tool-constrained access.
+- **AI drafts, the engineer decides** — value shifts to architecture + code auditing.
+- **Tiered rigor** — heavier process and review for risky paths (auth, payments, migrations).
+
+The pack encodes this as a **skills + agents** system: a single TypingMind agent that carries a
+library of reusable playbooks (`skills/`) and adopts specialist engineering roles (`agents/`) —
+architect → DB → backend → frontend → AI → QA → reviewer → devops.
+
 ---
 
 ## What's in this folder
 
-| File | Purpose |
+| Path | Purpose |
 |------|---------|
 | `README.md` | This guide — connect, create, train, test. |
 | `system-prompt.md` | The agent's system prompt. Paste into the agent's "Instructions" field. |
-| `agent-config.json` | Reference config (name, model, params, plugins) you can mirror in the UI. |
-| `knowledge-base/01-stack-and-conventions.md` | Your stack, conventions, do/don't rules. **Edit this.** |
+| `agent-config.json` | Reference config (name, model, params, plugins). |
+| `AGENTS.md` | Project guardrail/context file the agent reads first. **Edit this.** |
+| `knowledge-base/01-stack-and-conventions.md` | The 2026 AI-native full-stack stack + rules. **Edit this.** |
 | `knowledge-base/02-code-style.md` | Formatting, naming, testing, error-handling standards. |
 | `knowledge-base/03-architecture-patterns.md` | Reference patterns (API, DB, auth, frontend). |
-| `knowledge-base/04-review-checklist.md` | Checklist the agent uses for self-review & PR review. |
+| `knowledge-base/04-review-checklist.md` | Checklist for self-review & PR review. |
+| `knowledge-base/05-spec-driven-workflow.md` | Specify → Plan → Tasks → Implement + tiered rigor. |
+| `knowledge-base/06-context-engineering.md` | AGENTS.md, context stack, tool-constrained access. |
+| `skills/` | Reusable playbooks: scaffold feature, DB schema, REST API, frontend, AI feature, tests, debug, security, CI/CD, refactor. |
+| `agents/` | Engineering roles: architect, DB, backend, frontend, AI, QA, reviewer, devops. |
 
 ---
 
@@ -74,14 +97,20 @@ See `agent-config.json` for a copy‑paste reference of these settings.
 This is where the agent becomes *yours*. TypingMind's **Knowledge Base / Train AI** feature
 embeds documents and retrieves relevant chunks at query time (RAG).
 
-1. **Edit the knowledge files first** — especially `knowledge-base/01-stack-and-conventions.md`.
-   Replace the placeholders with your real stack, repo conventions, and rules.
+1. **Edit the facts first** — `AGENTS.md` and `knowledge-base/01-stack-and-conventions.md`.
+   The stack is a complete, opinionated default; tweak the `[...]` placeholders to your reality.
 2. In TypingMind: open the **Full‑Stack Dev** agent → **Knowledge Base** (a.k.a. *Train* / *Documents*).
-3. **Upload** all four files from `knowledge-base/`.
+3. **Upload everything**: `AGENTS.md`, all of `knowledge-base/`, all of `skills/`, all of `agents/`.
    - Or paste their contents as text documents if you prefer.
 4. Wait for indexing/embedding to finish (status shows "Ready").
 5. (Optional) Enable **"Always include knowledge base"** or set retrieval to automatic so the
    agent consults these docs on every relevant question.
+
+### Using skills & roles in chat
+- Run a playbook: *"Use the `build-rest-api` skill to add `POST /invoices`."*
+- Adopt a role: *"Act as the Architect: produce the spec and plan for [feature]."*
+- Run the whole pipeline: *"Build [feature] end to end — move through architect → backend →
+  frontend → QA → reviewer, pausing after each for my review."*
 
 > Keep the knowledge base small and high‑signal. RAG works best with focused, well‑structured
 > docs (which is why these are split by topic). Re‑upload when your conventions change.
