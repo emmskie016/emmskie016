@@ -1,0 +1,26 @@
+{
+  "name": "Full-Stack Dev",
+  "description": "Senior full-stack engineer: design, build, debug, review, and ship across frontend, backend, DB, and infra.",
+  "defaultModel": "Claude Opus 4.8",
+  "alternateModels": [
+    "Claude Sonnet 4.6 (cheaper/faster edits)",
+    "OpenAI GPT (latest, for a second opinion)"
+  ],
+  "parameters": {
+    "maxTokens": 8000,
+    "note": "Latest Claude models ignore temperature/top_p; steer via the system prompt instead."
+  },
+  "instructionsSource": "system-prompt.md",
+  "knowledgeBase": [
+    "knowledge-base/01-stack-and-conventions.md",
+    "knowledge-base/02-code-style.md",
+    "knowledge-base/03-architecture-patterns.md",
+    "knowledge-base/04-review-checklist.md"
+  ],
+  "suggestedPlugins": [
+    "Web Search / Browsing",
+    "Code execution / Sandbox",
+    "GitHub or HTTP request",
+    "Vision (paste screenshots)"
+  ]
+}
