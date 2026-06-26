@@ -1,0 +1,50 @@
+{
+  "_comment": "Paste this into TypingMind → Settings → MCP Connectors → (your connector) → Edit Config. It gives the Full-Stack Dev agent real tools. Replace EVERY <...> placeholder. Remove any server you don't want. Restart/refresh the connector after saving.",
+
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "<ABSOLUTE_PATH_TO_YOUR_PROJECT>"
+      ],
+      "_note": "Read/write code in your project. Point at one project root; the agent can only touch paths under it (least privilege)."
+    },
+
+    "git": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-git",
+        "--repository",
+        "<ABSOLUTE_PATH_TO_YOUR_PROJECT>"
+      ],
+      "_note": "git status/diff/log/commit on the repo. Requires uv installed (https://docs.astral.sh/uv)."
+    },
+
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "<YOUR_GITHUB_PAT>"
+      },
+      "_note": "PRs, issues, code search across your GitHub repos. Use a fine-grained PAT scoped to the repos you want."
+    },
+
+    "fetch": {
+      "command": "uvx",
+      "args": ["mcp-server-fetch"],
+      "_note": "Fetch web pages / current docs / package info. Requires uv."
+    },
+
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://<USER>:<PASSWORD>@localhost:5432/<DATABASE>"
+      ],
+      "_note": "Inspect schema and run read queries against your dev DB. Use a READ-ONLY role for safety."
+    }
+  }
+}
