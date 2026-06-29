@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AdPilot — Automate Meta &amp; Google Ads</title>
+<style>
+  :root{
+    --brand:#4f46e5; --brand-7:#4338ca; --brand-50:#eef2ff; --brand-100:#e0e7ff;
+    --ink:#0b1437; --soft:#3b4a6b; --muted:#6b7280; --line:#e6e9f0; --bg:#f5f6fa;
+    --meta:#1877f2; --google:#ea4335; --green:#16a34a; --red:#dc2626; --amber:#d97706;
+    --card:#fff; --shadow:0 1px 2px rgba(16,24,40,.04),0 1px 3px rgba(16,24,40,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+
+  /* Sidebar */
+  .side{background:#0b1023;color:#c7cde0;display:flex;flex-direction:column;padding:18px 14px;position:sticky;top:0;height:100vh}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 18px}
+  .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px}
+  .brand b{color:#fff;font-size:16px;letter-spacing:-.3px}
+  .brand small{display:block;color:#7c84a3;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+  .navlabel{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#5b6488;padding:14px 10px 6px;font-weight:700}
+  .nav{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:9px;cursor:pointer;color:#aab2cf;font-weight:600;font-size:13.5px;border:1px solid transparent}
+  .nav:hover{background:#161c33;color:#fff}
+  .nav.active{background:#1c2442;color:#fff;border-color:#2a335a}
+  .nav .ic{width:18px;height:18px;flex:none;opacity:.9}
+  .nav .badge{margin-left:auto;background:#2a335a;color:#cdd5f0;font-size:10px;font-weight:700;border-radius:20px;padding:1px 7px}
+  .side-foot{margin-top:auto;padding-top:14px;border-top:1px solid #1b2240}
+  .user{display:flex;align-items:center;gap:10px;padding:8px;border-radius:9px}
+  .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#22d3ee,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px}
+  .user small{color:#7c84a3;font-size:11px}
+
+  /* Topbar */
+  .main{display:flex;flex-direction:column;min-width:0}
+  .top{display:flex;align-items:center;gap:16px;padding:14px 26px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  .top h1{font-size:18px;margin:0;letter-spacing:-.3px}
+  .top .sub{color:var(--muted);font-size:12.5px;margin-top:1px}
+  .search{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:7px 11px;color:var(--muted);width:260px}
+  .search input{border:0;background:transparent;outline:none;font-size:13px;width:100%;color:var(--ink)}
+  .iconbtn{width:38px;height:38px;border:1px solid var(--line);border-radius:9px;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--soft);cursor:pointer}
+  .iconbtn:hover{background:var(--bg)}
+
+  .content{padding:24px 26px 40px;max-width:1280px;width:100%}
+  .view{display:none}
+  .view.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* Bits */
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .grid{display:grid;gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+  .pad{padding:18px}
+  .between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  h2.sec{font-size:14px;margin:0;letter-spacing:-.2px}
+  .muted{color:var(--muted)}
+  .btn{display:inline-flex;align-items:center;gap:7px;border-radius:9px;padding:8px 13px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;white-space:nowrap}
+  .btn.primary{background:var(--brand);color:#fff}
+  .btn.primary:hover{background:var(--brand-7)}
+  .btn.outline{background:#fff;border-color:var(--line);color:var(--soft)}
+  .btn.outline:hover{background:var(--bg)}
+  .btn.sm{padding:5px 10px;font-size:12px;border-radius:7px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;border-radius:20px;padding:3px 9px}
+  .chip .dot{width:6px;height:6px;border-radius:50%}
+  .chip.green{background:#dcfce7;color:#15803d} .chip.green .dot{background:#16a34a}
+  .chip.amber{background:#fef3c7;color:#b45309} .chip.amber .dot{background:#d97706}
+  .chip.slate{background:#eef1f6;color:#475569} .chip.slate .dot{background:#64748b}
+  .chip.red{background:#fee2e2;color:#b91c1c} .chip.red .dot{background:#dc2626}
+  .chip.blue{background:#dbeafe;color:#1d4ed8} .chip.blue .dot{background:#1877f2}
+  .pf{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:12.5px}
+  .pf .m{width:18px;height:18px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800}
+  .pf .m.meta{background:var(--meta)} .pf .m.google{background:#fff;border:1px solid var(--line);color:var(--google)}
+
+  /* KPI */
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  .kpi .top2{display:flex;align-items:flex-start;justify-content:space-between}
+  .kpi .lab{font-size:12px;color:var(--muted);font-weight:600}
+  .kpi .val{font-size:25px;font-weight:800;letter-spacing:-.5px;margin-top:6px}
+  .kpi .delta{font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:3px}
+  .up{color:var(--green)} .down{color:var(--red)}
+  .spark{margin-top:10px}
+
+  table{width:100%;border-collapse:collapse}
+  th{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);text-align:left;padding:10px 14px;background:#fafbfd;border-bottom:1px solid var(--line);font-weight:700}
+  td{padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px}
+  tbody tr:hover{background:#fafbff}
+  .tname{font-weight:600}
+  .tsub{font-size:11.5px;color:var(--muted)}
+  .num{font-variant-numeric:tabular-nums}
+  .toggle{width:34px;height:20px;border-radius:20px;background:#cbd5e1;position:relative;cursor:pointer;flex:none}
+  .toggle.on{background:var(--brand)}
+  .toggle::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.18s}
+  .toggle.on::after{left:16px}
+  .bar{height:8px;border-radius:20px;background:#eef1f6;overflow:hidden}
+  .bar > i{display:block;height:100%;border-radius:20px}
+  .tabs{display:flex;gap:4px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:4px;width:max-content}
+  .tab{padding:6px 13px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--soft);cursor:pointer}
+  .tab.active{background:#fff;color:var(--ink);box-shadow:var(--shadow)}
+  .note{background:var(--brand-50);border:1px solid var(--brand-100);border-radius:12px;padding:12px 14px;font-size:12.5px;color:#3730a3;display:flex;gap:10px;align-items:flex-start}
+
+  /* Creative cards */
+  .cre{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+  .cre .img{height:120px;display:flex;align-items:flex-end;padding:10px;color:#fff;font-weight:700;font-size:12px}
+  .cre .b{padding:12px}
+  .cre .hl{font-weight:700;font-size:13.5px;margin:0 0 4px}
+  .cre .bd{font-size:12px;color:var(--soft);margin:0 0 10px;min-height:32px}
+
+  .price-grid{grid-template-columns:repeat(4,1fr)}
+  .tier{border:1px solid var(--line);border-radius:16px;padding:18px;background:#fff;position:relative}
+  .tier.pop{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-50)}
+  .tier .pp{font-size:30px;font-weight:800;letter-spacing:-1px}
+  .tier .pp small{font-size:13px;font-weight:600;color:var(--muted)}
+  .tier ul{list-style:none;padding:0;margin:12px 0 0;font-size:12.5px;color:var(--soft)}
+  .tier li{padding:5px 0;display:flex;gap:8px;align-items:flex-start}
+  .tier li svg{flex:none;margin-top:2px}
+  .ribbon{position:absolute;top:-10px;right:14px;background:var(--brand);color:#fff;font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 9px;border-radius:20px}
+
+  .stat3{grid-template-columns:repeat(3,1fr)}
+  .feed{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .feed:last-child{border:0}
+  .fic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none;font-size:14px}
+  .pm{display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:11px;padding:12px}
+  svg{display:block}
+  @media(max-width:1080px){.kpis,.price-grid{grid-template-columns:repeat(2,1fr)}.app{grid-template-columns:72px 1fr}.brand b,.brand small,.nav span,.navlabel,.user div,.side-foot{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== Sidebar ===== -->
+  <aside class="side">
+    <div class="brand">
+      <div class="logo">A</div>
+      <div><b>AdPilot</b><small>Ads Autopilot</small></div>
+    </div>
+
+    <div class="navlabel">Overview</div>
+    <div class="nav active" data-view="dashboard">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+      <span>Dashboard</span>
+    </div>
+    <div class="nav" data-view="campaigns">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="12" y="6" width="3" height="11"/><rect x="17" y="13" width="3" height="4"/></svg>
+      <span>Campaigns</span><span class="badge">24</span>
+    </div>
+    <div class="nav" data-view="creative">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+      <span>Creative Studio</span>
+    </div>
+    <div class="nav" data-view="automation">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>
+      <span>Automation</span><span class="badge">12</span>
+    </div>
+    <div class="nav" data-view="reports">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg>
+      <span>Reports</span>
+    </div>
+
+    <div class="navlabel">Account</div>
+    <div class="nav" data-view="connections">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+      <span>Connections</span>
+    </div>
+    <div class="nav" data-view="billing">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      <span>Billing &amp; Plans</span>
+    </div>
+
+    <div class="side-foot">
+      <div class="user">
+        <div class="avatar">EC</div>
+        <div><b style="color:#fff;font-size:13px">Emil C.</b><small>Teeshoppen ApS</small></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== Main ===== -->
+  <div class="main">
+    <header class="top">
+      <div>
+        <h1 id="pageTitle">Dashboard</h1>
+        <div class="sub" id="pageSub">Unified performance across Meta &amp; Google Ads · Last 30 days</div>
+      </div>
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input placeholder="Search campaigns, rules…"/>
+      </div>
+      <div class="iconbtn">🔔</div>
+      <button class="btn primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>New campaign</button>
+    </header>
+
+    <div class="content">
+
+      <!-- ========== DASHBOARD ========== -->
+      <section class="view active" id="dashboard">
+        <div class="note" style="margin-bottom:16px">
+          <span>🤖</span>
+          <div><b>Autopilot made 7 optimizations in the last 24h</b> — shifted $420/day toward Meta Advantage+ (ROAS 4.8) and paused 2 underperforming Google ad groups. <a href="#" style="color:var(--brand);font-weight:700">Review actions →</a></div>
+        </div>
+
+        <div class="grid kpis" id="kpis"></div>
+
+        <div class="row" style="margin-top:16px">
+          <div class="card pad" style="flex:2;min-width:420px">
+            <div class="between"><h2 class="sec">Spend &amp; ROAS trend</h2>
+              <div class="tabs"><div class="tab active">30d</div><div class="tab">7d</div><div class="tab">24h</div></div>
+            </div>
+            <div id="trendChart" style="margin-top:14px"></div>
+            <div style="display:flex;gap:18px;margin-top:6px;font-size:12px" class="muted">
+              <span class="pf"><span class="m meta">f</span> Meta</span>
+              <span class="pf"><span class="m google">G</span> Google</span>
+            </div>
+          </div>
+          <div class="card pad" style="flex:1;min-width:280px">
+            <h2 class="sec">Budget split by platform</h2>
+            <div id="donut" style="display:flex;justify-content:center;margin:14px 0"></div>
+            <div id="splitLegend"></div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:16px">
+          <div class="card" style="flex:2;min-width:420px">
+            <div class="pad between"><h2 class="sec">Top campaigns</h2><a class="muted" style="font-size:12px" href="#" data-jump="campaigns">View all →</a></div>
+            <table id="topCampaigns"></table>
+          </div>
+          <div class="card pad" style="flex:1;min-width:280px">
+            <h2 class="sec">Recent automation activity</h2>
+            <div id="activity" style="margin-top:8px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== CAMPAIGNS ========== -->
+      <section class="view" id="campaigns">
+        <div class="between" style="margin-bottom:14px">
+          <div class="tabs">
+            <div class="tab active">All platforms</div><div class="tab">Meta</div><div class="tab">Google</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn outline">⏸ Pause</button>
+            <button class="btn outline">⬚ Bulk edit</button>
+            <button class="btn primary">+ New campaign</button>
+          </div>
+        </div>
+        <div class="grid stat3" style="margin-bottom:16px" id="campStats"></div>
+        <div class="card">
+          <table id="campTable"></table>
+        </div>
+      </section>
+
+      <!-- ========== CREATIVE STUDIO ========== -->
+      <section class="view" id="creative">
+        <div class="row">
+          <div class="card pad" style="flex:1;min-width:320px;max-width:360px">
+            <h2 class="sec">AI Creative Generator</h2>
+            <p class="muted" style="font-size:12.5px;margin:4px 0 14px">Describe your product — AdPilot writes copy &amp; designs visuals for every placement.</p>
+            <label class="label" style="font-size:12px;font-weight:600;color:var(--soft)">Product / offer</label>
+            <textarea class="ta" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:10px;font-size:13px;min-height:70px" >Organic cotton t-shirts, sustainably made in Portugal. Summer sale −25%.</textarea>
+            <div style="display:flex;gap:10px;margin-top:12px">
+              <div style="flex:1"><label class="label" style="font-size:12px;color:var(--soft)">Platform</label>
+                <select class="sel" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:9px;font-size:13px"><option>Meta + Google</option><option>Meta only</option><option>Google only</option></select></div>
+              <div style="flex:1"><label class="label" style="font-size:12px;color:var(--soft)">Tone</label>
+                <select class="sel" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:9px;font-size:13px"><option>Friendly</option><option>Premium</option><option>Urgent</option></select></div>
+            </div>
+            <label class="label" style="font-size:12px;color:var(--soft);margin-top:12px">Goal</label>
+            <select class="sel" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:9px;font-size:13px"><option>Sales / Conversions</option><option>Leads</option><option>Traffic</option></select>
+            <button class="btn primary" style="width:100%;justify-content:center;margin-top:16px">✨ Generate 6 variants</button>
+            <div class="muted" style="font-size:11px;text-align:center;margin-top:8px">Uses 6 of 300 monthly AI credits</div>
+          </div>
+          <div style="flex:2;min-width:380px">
+            <div class="between" style="margin-bottom:12px"><h2 class="sec">Generated variants</h2><span class="muted" style="font-size:12px">6 drafts · auto-resized to 9 placements</span></div>
+            <div class="grid" style="grid-template-columns:repeat(3,1fr)" id="creatives"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== AUTOMATION ========== -->
+      <section class="view" id="automation">
+        <div class="row" style="margin-bottom:16px">
+          <div class="card pad" style="flex:1"><div class="lab muted" style="font-size:12px;font-weight:600">Active rules</div><div style="font-size:24px;font-weight:800">12</div></div>
+          <div class="card pad" style="flex:1"><div class="lab muted" style="font-size:12px;font-weight:600">Actions this week</div><div style="font-size:24px;font-weight:800">148</div></div>
+          <div class="card pad" style="flex:1"><div class="lab muted" style="font-size:12px;font-weight:600">Est. spend saved</div><div style="font-size:24px;font-weight:800;color:var(--green)">$3,240</div></div>
+          <div class="card pad" style="flex:1"><div class="lab muted" style="font-size:12px;font-weight:600">Autopilot mode</div><div style="display:flex;align-items:center;gap:8px;margin-top:4px"><div class="toggle on"></div><b style="font-size:13px">Guarded</b></div></div>
+        </div>
+        <div class="note" style="margin-bottom:14px"><span>🛡️</span><div><b>Guardrails active:</b> hard daily cap $5,000 · max −30% budget change/action · high-impact actions require approval · global kill-switch armed.</div></div>
+        <div class="between" style="margin-bottom:12px"><h2 class="sec">Automation rules</h2><button class="btn primary">+ New rule</button></div>
+        <div class="card"><table id="rulesTable"></table></div>
+
+        <div class="card pad" style="margin-top:16px">
+          <h2 class="sec">Playbook templates</h2>
+          <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-top:12px" id="playbooks"></div>
+        </div>
+      </section>
+
+      <!-- ========== REPORTS ========== -->
+      <section class="view" id="reports">
+        <div class="between" style="margin-bottom:14px">
+          <div class="tabs"><div class="tab active">Performance</div><div class="tab">Attribution</div><div class="tab">Creative</div></div>
+          <div style="display:flex;gap:8px"><button class="btn outline">📅 Last 30 days</button><button class="btn outline">⤓ Export PDF</button><button class="btn primary">＋ Schedule</button></div>
+        </div>
+        <div class="grid kpis" id="repKpis" style="margin-bottom:16px"></div>
+        <div class="row">
+          <div class="card pad" style="flex:2;min-width:420px">
+            <h2 class="sec">Conversions by channel</h2>
+            <div id="repBars" style="margin-top:14px"></div>
+          </div>
+          <div class="card pad" style="flex:1;min-width:260px">
+            <h2 class="sec">Funnel</h2>
+            <div id="funnel" style="margin-top:12px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== CONNECTIONS ========== -->
+      <section class="view" id="connections">
+        <h2 class="sec" style="margin-bottom:4px">Connected ad accounts</h2>
+        <p class="muted" style="font-size:12.5px;margin:0 0 16px">Securely connected via official APIs. Tokens are encrypted (KMS) and never stored in plaintext.</p>
+        <div class="grid" style="grid-template-columns:repeat(2,1fr);max-width:840px" id="connList"></div>
+        <div class="card pad" style="max-width:840px;margin-top:16px">
+          <div class="between">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="pf"><span class="m meta" style="width:34px;height:34px;border-radius:9px;font-size:18px">f</span></div>
+              <div class="pf"><span class="m google" style="width:34px;height:34px;border-radius:9px;font-size:16px">G</span></div>
+              <div><b style="font-size:14px">Connect another account</b><div class="muted" style="font-size:12px">Meta Business Manager or Google Ads (MCC supported)</div></div>
+            </div>
+            <button class="btn primary">+ Connect</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== BILLING ========== -->
+      <section class="view" id="billing">
+        <div class="card pad between" style="margin-bottom:18px;max-width:1040px">
+          <div>
+            <div class="muted" style="font-size:12px;font-weight:600">CURRENT PLAN</div>
+            <div style="font-size:20px;font-weight:800;margin-top:2px">Growth <span class="chip blue" style="vertical-align:middle"><span class="dot"></span>Annual</span></div>
+            <div class="muted" style="font-size:12.5px;margin-top:4px">$124/mo · renews 14 Jul 2026 · $38,200 of $50k managed spend used</div>
+            <div class="bar" style="width:320px;margin-top:8px"><i style="width:76%;background:var(--brand)"></i></div>
+          </div>
+          <div style="text-align:right">
+            <button class="btn outline" style="margin-bottom:8px">Manage payment</button><br>
+            <button class="btn primary">Upgrade plan</button>
+          </div>
+        </div>
+
+        <div class="between" style="margin-bottom:12px;max-width:1040px">
+          <h2 class="sec">Plans</h2>
+          <div class="tabs"><div class="tab active">Annual −17%</div><div class="tab">Monthly</div></div>
+        </div>
+        <div class="grid price-grid" id="tiers"></div>
+
+        <h2 class="sec" style="margin:22px 0 12px">Payment methods</h2>
+        <div class="grid" style="grid-template-columns:repeat(3,1fr);max-width:1040px" id="pays"></div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- tiny helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const usd=n=>'$'+n.toLocaleString('en-US',{maximumFractionDigits:0});
+const pf=p=>`<span class="pf"><span class="m ${p}">${p==='meta'?'f':'G'}</span>${p==='meta'?'Meta':'Google'}</span>`;
+const chip=(c,t)=>`<span class="chip ${c}"><span class="dot"></span>${t}</span>`;
+const statusChip=s=>({active:['green','Active'],paused:['slate','Paused'],review:['amber','In review'],limited:['amber','Limited'],draft:['slate','Draft']}[s]);
+
+/* ---------- data ---------- */
+const KPIS=[
+  {l:'Ad spend',v:'$48,210',d:+8.2,c:'#4f46e5'},
+  {l:'Revenue',v:'$214,930',d:+14.6,c:'#16a34a'},
+  {l:'Blended ROAS',v:'4.46x',d:+5.1,c:'#7c3aed'},
+  {l:'Avg. CPA',v:'$18.40',d:-6.3,c:'#0ea5e9'},
+];
+const REPKPIS=[
+  {l:'Conversions',v:'11,684',d:+12.1,c:'#4f46e5'},
+  {l:'CTR',v:'2.41%',d:+0.4,c:'#7c3aed'},
+  {l:'Impressions',v:'8.9M',d:+9.0,c:'#0ea5e9'},
+  {l:'Cost / conv.',v:'$4.13',d:-7.7,c:'#16a34a'},
+];
+const CAMPAIGNS=[
+  ['Summer Sale — Advantage+','meta','active','Sales / Conversions',1200,1148,4.82,12.4,true],
+  ['Search — Brand + Generic','google','active','Sales / Conversions',900,876,5.31,9.1,true],
+  ['Performance Max — Catalog','google','active','Sales / Conversions',1500,1442,3.94,7.6,true],
+  ['Retargeting — 30d viewers','meta','active','Sales / Conversions',600,588,6.10,3.2,false],
+  ['Lookalike 2% — Prospecting','meta','limited','Sales / Conversions',800,612,2.81,5.4,true],
+  ['YouTube — Brand awareness','google','paused','Awareness',400,0,0,1.1,false],
+  ['Lead Gen — Wholesale','meta','review','Leads',300,0,0,0,false],
+];
+const ACTIVITY=[
+  ['🤖','autopilot','meta','Increased budget +20% on <b>Summer Sale</b>','ROAS 4.8 &gt; target 3.0 for 3 days','2h ago','#eef2ff'],
+  ['⏸','rule','google','Paused ad group <b>"generic-cheap"</b>','CPA $42 &gt; 1.5× target','5h ago','#fee2e2'],
+  ['🚫','rule','google','Added 12 negative keywords','Search-term mining','7h ago','#fef3c7'],
+  ['🤖','autopilot','meta','Rotated in 2 fresh creatives','CTR fatigue detected','11h ago','#eef2ff'],
+  ['👤','user','meta','Approved budget shift $420/day','Manual approval','1d ago','#e0f2fe'],
+];
+const RULES=[
+  ['Pause high-CPA ad sets','all','Daily','CPA &gt; 1.5× target for 3d','Pause ad set','enabled',42,false],
+  ['Scale winning campaigns','meta','Hourly','ROAS &gt; 3.0 for 2d','Budget +20% (max +30%)','enabled',31,false],
+  ['Cross-platform budget shift','all','Daily','Marginal ROAS gap &gt; 25%','Reallocate up to $500/day','enabled',18,true],
+  ['Negative keyword mining','google','Daily','Search term CTR &lt; 0.5%','Add negative keyword','enabled',57,false],
+  ['Dayparting — off hours','all','Schedule','12am–6am','Reduce bids −40%','paused',0,false],
+];
+const PLAYBOOKS=[
+  ['🛒','E-com ROAS maximizer','Auto-scale winners, kill losers, protect ROAS floor'],
+  ['🎯','Lead-gen optimizer','Lower CPL with bid + audience tuning'],
+  ['🚀','New-product launch','Phased budget ramp + creative testing'],
+];
+const CREATIVES=[
+  ['Sustainably Soft. Seriously Stylish.','Organic cotton tees, made in Portugal. −25% this week only.','Shop the sale','meta','#6366f1','winning',3.9],
+  ['Your New Favourite T-Shirt','Ethically made, impossibly comfy. Summer sale now on.','Shop now','google','#0ea5e9','live',2.7],
+  ['−25% on Organic Cotton','Premium basics that last. Free returns, ships in 24h.','Get the deal','meta','#16a34a','live',2.4],
+  ['Made in Portugal. Loved Everywhere.','Sustainable t-shirts in 9 colours. Sale ends Sunday.','Shop the drop','google','#f59e0b','in_review',0],
+  ['Comfort You Can Feel Good About','Organic, fair-trade cotton. −25% summer sale.','Shop now','meta','#ec4899','draft',0],
+  ['The Last T-Shirt You\'ll Need','Durable organic cotton basics. Now 25% off.','Buy now','google','#8b5cf6','draft',0],
+];
+const CONNS=[
+  ['meta','Teeshoppen — Main','act_1029384756','connected',28400,0],
+  ['google','Teeshoppen DK','412-883-9920','connected',19800,0],
+  ['meta','Teeshoppen — Wholesale','act_5564738291','action_required',0,1],
+  ['google','Teeshoppen SE (MCC)','778-201-4456','connected',7600,0],
+];
+const TIERS=[
+  ['Starter','$41','/mo','Solo &amp; small e-com',['Up to $10k/mo managed spend','2 ad accounts · 2 seats','Basic automation (5 rules)','50 AI creative credits','Email support'],false],
+  ['Growth','$124','/mo','Scaling SMBs',['Up to $50k/mo managed spend','10 accounts · 8 seats','Unlimited rules + AI Autopilot','300 AI credits','Priority support'],true],
+  ['Agency','$332','/mo','Agencies',['Up to $250k/mo managed spend','50 accounts · 25 seats','White-label + client workspaces','1,500 AI credits','Dedicated CSM'],false],
+  ['Enterprise','Custom','','Large brands',['Unlimited managed spend','Unlimited accounts &amp; seats','SSO/SAML · SLA · DPA','Custom AI credits','24/7 support'],false],
+];
+const PAYS=[
+  ['💳','Credit / Debit Cards','Visa · Mastercard · Amex · Discover'],
+  ['📱','Digital Wallets','Apple Pay · Google Pay · Link'],
+  ['🏦','Bank Debit','ACH (US) · SEPA (EU) — Growth+'],
+  ['🔁','Wire / Bank Transfer','Annual &amp; Enterprise invoices'],
+  ['🅿️','PayPal','Starter &amp; Growth plans'],
+  ['🧾','Invoicing (Net-30)','Enterprise &amp; annual prepay'],
+];
+
+/* ---------- sparkline / charts ---------- */
+function spark(data,color,w=120,h=34){
+  const mx=Math.max(...data),mn=Math.min(...data),rng=(mx-mn)||1;
+  const pts=data.map((d,i)=>[i/(data.length-1)*w,h-((d-mn)/rng)*(h-6)-3]);
+  const dd=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=dd+` L ${w} ${h} L 0 ${h} Z`;
+  const id='g'+Math.random().toString(36).slice(2,7);
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".22"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><path d="${area}" fill="url(#${id})"/><path d="${dd}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+function rnd(seed){let s=seed;return()=>{s=(s*9301+49297)%233280;return s/233280}}
+function series(seed,base,amp){const r=rnd(seed);return Array.from({length:30},(_,i)=>Math.round(base+Math.sin(i/3)*amp*.5+r()*amp+i*amp*.04))}
+
+function lineChart(el){
+  const w=620,h=210,pad=8; const meta=series(7,900,260),goog=series(19,720,240);
+  const all=[...meta,...goog],mx=Math.max(...all),mn=Math.min(...all)*.8,rng=mx-mn;
+  const X=i=>pad+i/29*(w-pad*2), Y=v=>h-pad-((v-mn)/rng)*(h-pad*2-18);
+  const path=d=>d.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ');
+  const area=d=>path(d)+` L ${X(29)} ${h-pad} L ${X(0)} ${h-pad} Z`;
+  let grid='';for(let g=0;g<4;g++){const y=pad+g/3*(h-pad*2-18);grid+=`<line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="#eef1f6"/>`}
+  el.innerHTML=`<svg width="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="overflow:visible">
+    <defs><linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1877f2" stop-opacity=".18"/><stop offset="1" stop-color="#1877f2" stop-opacity="0"/></linearGradient>
+    <linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ea4335" stop-opacity=".16"/><stop offset="1" stop-color="#ea4335" stop-opacity="0"/></linearGradient></defs>
+    ${grid}<path d="${area(goog)}" fill="url(#gg)"/><path d="${path(goog)}" fill="none" stroke="#ea4335" stroke-width="2.5"/>
+    <path d="${area(meta)}" fill="url(#mg)"/><path d="${path(meta)}" fill="none" stroke="#1877f2" stroke-width="2.5"/></svg>`;
+}
+function donut(el,legendEl){
+  const segs=[['Meta',58,'#1877f2'],['Google',42,'#ea4335']];
+  let a=-90,parts='';const R=58,C=2*Math.PI*R;
+  segs.forEach(s=>{const len=s[1]/100*C;parts+=`<circle r="${R}" cx="80" cy="80" fill="none" stroke="${s[2]}" stroke-width="22" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-(a+90)/360*C}" transform="rotate(-90 80 80)"/>`;a+=s[1]/100*360});
+  el.innerHTML=`<svg width="160" height="160" viewBox="0 0 160 160">${parts}<text x="80" y="76" text-anchor="middle" font-size="22" font-weight="800" fill="#0b1437">$48k</text><text x="80" y="96" text-anchor="middle" font-size="11" fill="#6b7280">daily total</text></svg>`;
+  legendEl.innerHTML=segs.map(s=>`<div class="between" style="font-size:13px;padding:6px 0"><span class="pf">${pf(s[0].toLowerCase())}</span><b>${s[1]}%</b></div>`).join('');
+}
+
+/* ---------- renderers ---------- */
+function kpiCard(k){return `<div class="card pad kpi"><div class="top2"><div><div class="lab">${k.l}</div><div class="val">${k.v}</div></div>
+  <div class="delta ${k.d>=0?'up':'down'}">${k.d>=0?'▲':'▼'} ${Math.abs(k.d)}%</div></div>
+  <div class="spark">${spark(series(k.l.length*5,40,18),k.c)}</div></div>`}
+function renderKpis(el,arr){el.innerHTML=arr.map(kpiCard).join('')}
+
+function campRow(c){const[name,p,st,obj,bud,sp,roas,ctr,ap]=c;const[cc,ct]=statusChip(st);
+  return `<tr><td><div class="tname">${name}</div><div class="tsub">${obj}</div></td>
+    <td>${pf(p)}</td><td>${chip(cc,ct)}</td>
+    <td class="num">${usd(bud)}/day</td><td class="num">${usd(sp)}</td>
+    <td class="num"><b>${roas?roas.toFixed(2)+'x':'—'}</b></td><td class="num">${ctr?ctr.toFixed(1)+'%':'—'}</td>
+    <td><div class="toggle ${ap?'on':''}"></div></td>
+    <td style="text-align:right">⋯</td></tr>`}
+function renderCampaignTable(el,full){
+  el.innerHTML=`<thead><tr><th>Campaign</th><th>Platform</th><th>Status</th>${full?'<th>Budget</th>':''}<th>Spend</th><th>ROAS</th><th>CTR</th><th>Autopilot</th><th></th></tr></thead><tbody>${(full?CAMPAIGNS:CAMPAIGNS.slice(0,5)).map(campRow).join('')}</tbody>`;
+}
+
+function renderActivity(el){el.innerHTML=ACTIVITY.map(a=>`<div class="feed"><div class="fic" style="background:${a[6]}">${a[0]}</div>
+  <div><div style="font-size:12.5px;line-height:1.45">${a[3]}</div>
+  <div class="muted" style="font-size:11px;margin-top:2px">${a[4]} · <span class="pf" style="font-size:11px">${pf(a[2])}</span> · ${a[5]}</div></div></div>`).join('')}
+
+function renderRules(el){el.innerHTML=`<thead><tr><th>Rule</th><th>Scope</th><th>When / If</th><th>Then</th><th>Status</th><th>Runs</th><th></th></tr></thead><tbody>${RULES.map(r=>{
+  const[name,sc,wh,cond,act,st,runs,appr]=r;
+  return `<tr><td><div class="tname">${name}${appr?' <span class="chip amber" style="margin-left:4px"><span class="dot"></span>approval</span>':''}</div></td>
+  <td>${sc==='all'?'<span class="chip slate"><span class="dot"></span>All</span>':pf(sc)}</td>
+  <td style="font-size:12px"><b>${wh}</b><div class="tsub">${cond}</div></td>
+  <td style="font-size:12px">${act}</td>
+  <td>${st==='enabled'?chip('green','Enabled'):chip('slate','Paused')}</td>
+  <td class="num">${runs}</td><td><div class="toggle ${st==='enabled'?'on':''}"></div></td></tr>`}).join('')}</tbody>`}
+
+function renderPlaybooks(el){el.innerHTML=PLAYBOOKS.map(p=>`<div class="cre" style="padding:14px"><div style="font-size:22px">${p[0]}</div>
+  <b style="display:block;margin-top:8px;font-size:13.5px">${p[1]}</b><div class="muted" style="font-size:12px;margin-top:4px">${p[2]}</div>
+  <button class="btn outline sm" style="margin-top:12px">Use template</button></div>`).join('')}
+
+function renderCreatives(el){const map={winning:['green','Winning'],live:['blue','Live'],in_review:['amber','In review'],draft:['slate','Draft']};
+  el.innerHTML=CREATIVES.map(c=>{const[hl,bd,cta,p,col,st,ctr]=c;const[cc,ct]=map[st];
+  return `<div class="cre"><div class="img" style="background:linear-gradient(135deg,${col},${col}cc)">${pf(p).replace('pf','')} </div>
+    <div class="b"><div class="between" style="margin-bottom:6px">${chip(cc,ct)}${ctr?`<span class="muted" style="font-size:11px">CTR ${ctr}%</span>`:''}</div>
+    <p class="hl">${hl}</p><p class="bd">${bd}</p>
+    <div class="between"><span class="btn outline sm">${cta}</span><div style="display:flex;gap:6px"><span class="iconbtn" style="width:30px;height:30px">✎</span><span class="iconbtn" style="width:30px;height:30px">⎘</span></div></div></div></div>`}).join('')}
+
+function renderConns(el){const map={connected:['green','Connected'],action_required:['red','Action required'],disconnected:['slate','Disconnected']};
+  el.innerHTML=CONNS.map(c=>{const[p,acc,id,st,sp,iss]=c;const[cc,ct]=map[st];
+  return `<div class="card pad"><div class="between"><div style="display:flex;gap:12px;align-items:center">
+    <span class="m ${p}" style="width:40px;height:40px;border-radius:10px;font-size:20px;display:flex;align-items:center;justify-content:center;color:#fff;${p==='google'?'background:#fff;border:1px solid var(--line);color:var(--google)':'background:var(--meta)'}">${p==='meta'?'f':'G'}</span>
+    <div><b style="font-size:14px">${acc}</b><div class="muted" style="font-size:12px">${id}</div></div></div>${chip(cc,ct)}</div>
+    <div class="between" style="margin-top:14px;font-size:12.5px"><span class="muted">30-day spend</span><b>${usd(sp)}</b></div>
+    ${iss?`<div class="note" style="margin-top:10px;background:#fee2e2;border-color:#fecaca;color:#b91c1c"><span>⚠️</span><div>Billing method expired — re-authenticate to resume.</div></div>`:''}
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn outline sm">Manage</button><button class="btn outline sm">Sync now</button></div></div>`}).join('')}
+
+function renderTiers(el){el.innerHTML=TIERS.map(t=>{const[name,price,per,who,feats,pop]=t;
+  return `<div class="tier ${pop?'pop':''}">${pop?'<div class="ribbon">MOST POPULAR</div>':''}
+   <div style="font-weight:800;font-size:15px">${name}</div><div class="muted" style="font-size:12px">${who}</div>
+   <div class="pp" style="margin-top:10px">${price}<small>${per}</small></div>
+   <button class="btn ${pop?'primary':'outline'}" style="width:100%;justify-content:center;margin-top:12px">${name==='Enterprise'?'Contact sales':'Choose '+name}</button>
+   <ul>${feats.map(f=>`<li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>${f}</li>`).join('')}</ul></div>`}).join('')}
+
+function renderPays(el){el.innerHTML=PAYS.map(p=>`<div class="pm"><div style="font-size:20px">${p[0]}</div><div><b style="font-size:13px">${p[1]}</b><div class="muted" style="font-size:11.5px">${p[2]}</div></div></div>`).join('')}
+
+function renderCampStats(el){el.innerHTML=[
+  ['Active campaigns','18','green','of 24 total'],
+  ['Daily budget','$6,300','slate','across platforms'],
+  ['Avg. ROAS','4.46x','green','▲ 5.1% vs last period'],
+].map(s=>`<div class="card pad"><div class="muted" style="font-size:12px;font-weight:600">${s[0]}</div><div style="font-size:23px;font-weight:800;margin-top:4px">${s[1]}</div><div class="muted" style="font-size:11.5px;margin-top:2px">${s[3]}</div></div>`).join('')}
+
+function renderRepBars(el){const data=[['Meta — Advantage+',4210,'#1877f2'],['Google — Search',3180,'#ea4335'],['Google — PMax',2540,'#f59e0b'],['Meta — Retargeting',1290,'#6366f1'],['Google — YouTube',464,'#10b981']];
+  const mx=Math.max(...data.map(d=>d[1]));
+  el.innerHTML=data.map(d=>`<div style="margin-bottom:13px"><div class="between" style="font-size:12.5px;margin-bottom:5px"><span>${d[0]}</span><b class="num">${d[1].toLocaleString()}</b></div><div class="bar"><i style="width:${d[1]/mx*100}%;background:${d[2]}"></i></div></div>`).join('')}
+
+function renderFunnel(el){const f=[['Impressions','8.9M',100],['Clicks','214k',54],['Add to cart','38k',26],['Conversions','11.7k',14]];
+  el.innerHTML=f.map((s,i)=>`<div style="margin-bottom:10px"><div class="between" style="font-size:12.5px;margin-bottom:5px"><span>${s[0]}</span><b>${s[1]}</b></div><div class="bar" style="height:26px"><i style="width:${s[2]}%;background:linear-gradient(90deg,var(--brand),#7c3aed);display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:10px;font-weight:700">${s[2]}%</i></div></div>`).join('')}
+
+/* ---------- mount ---------- */
+renderKpis($('#kpis'),KPIS);
+renderKpis($('#repKpis'),REPKPIS);
+lineChart($('#trendChart'));
+donut($('#donut'),$('#splitLegend'));
+renderCampaignTable($('#topCampaigns'),false);
+renderActivity($('#activity'));
+renderCampaignTable($('#campTable'),true);
+renderCampStats($('#campStats'));
+renderRules($('#rulesTable'));
+renderPlaybooks($('#playbooks'));
+renderCreatives($('#creatives'));
+renderConns($('#connList'));
+renderTiers($('#tiers'));
+renderPays($('#pays'));
+renderRepBars($('#repBars'));
+renderFunnel($('#funnel'));
+
+/* ---------- nav ---------- */
+const TITLES={dashboard:['Dashboard','Unified performance across Meta &amp; Google Ads · Last 30 days'],
+  campaigns:['Campaigns','Manage every Meta &amp; Google campaign in one place'],
+  creative:['Creative Studio','Generate, test and rotate ad creative with AI'],
+  automation:['Automation','Rules, playbooks &amp; AI Autopilot — with guardrails'],
+  reports:['Reports','Cross-platform analytics &amp; attribution'],
+  connections:['Connections','Manage connected ad accounts'],
+  billing:['Billing &amp; Plans','Subscription, usage &amp; payment methods']};
+function go(view){
+  $$('.nav').forEach(n=>n.classList.toggle('active',n.dataset.view===view));
+  $$('.view').forEach(v=>v.classList.toggle('active',v.id===view));
+  $('#pageTitle').innerHTML=TITLES[view][0];$('#pageSub').innerHTML=TITLES[view][1];
+  document.querySelector('.content').scrollTo?.(0,0);window.scrollTo(0,0);
+  if(location.hash.slice(1)!==view) history.replaceState(null,'','#'+view);
+}
+$$('.nav').forEach(n=>n.addEventListener('click',()=>go(n.dataset.view)));
+$$('[data-jump]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();go(a.dataset.jump)}));
+$$('.tab').forEach(t=>t.addEventListener('click',()=>{[...t.parentElement.children].forEach(x=>x.classList.remove('active'));t.classList.add('active')}));
+document.addEventListener('click',e=>{if(e.target.classList.contains('toggle'))e.target.classList.toggle('on')});
+if(location.hash) go(location.hash.slice(1));
+</script>
+</body>
+</html>
