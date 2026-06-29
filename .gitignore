@@ -1,0 +1,14 @@
+# Local scratch / temporary working files (not part of the project)
+scratchpad/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+
+# Secrets — never commit
+.env
+.env.*
+*.pem
+*.key
+secrets/

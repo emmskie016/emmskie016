@@ -288,6 +288,12 @@ WITH  <guardrails>                              caps, cooldowns, approval-requir
 - PII handling for Custom Audiences / Conversions API (hashing, consent).
 - SOC 2 readiness as you move upmarket.
 
+> **Security is a first-class requirement.** Because AdPilot holds OAuth tokens
+> that spend real money and stores customer PII, the full defense-in-depth
+> design — threat model, token encryption (KMS/HSM), tenant isolation (Postgres
+> RLS), money-movement guardrails, AI/prompt-injection defenses, SDLC, and a
+> pre-GA hardening checklist — lives in **[`security-architecture.md`](./security-architecture.md)**.
+
 ### 8.3 Key risks & mitigations
 | Risk | Mitigation |
 |---|---|
